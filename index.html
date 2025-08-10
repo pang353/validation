@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>จองตั๋วกิจกรรม</title>
+    <title>แบบสอบถามสุขภาพ</title>
     <style>
         :root {
-            --primary-color: #4CAF50;
-            --hover-color: #45a049;
+            --primary-color: #2196F3;
+            --hover-color: #1976D2;
             --error-color: #ff5252;
+            --success-color: #4CAF50;
         }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 20px auto;
             padding: 20px;
             background-color: #f5f5f5;
+            line-height: 1.6;
         }
 
         h1 {
@@ -27,12 +29,15 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        .form-container {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
         }
 
         label {
@@ -42,26 +47,59 @@
             font-weight: 500;
         }
 
-        input, select {
+        input[type="number"], textarea {
             width: 100%;
             padding: 12px;
-            margin-bottom: 5px;
             border: 2px solid #ddd;
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        input:focus, select:focus {
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        input[type="radio"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.2);
         }
 
-        button[type="submit"] {
+        button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background-color: var(--primary-color);
             color: white;
             border: none;
@@ -72,7 +110,7 @@
             transition: background-color 0.3s ease;
         }
 
-        button[type="submit"]:hover {
+        button:hover {
             background-color: var(--hover-color);
         }
 
@@ -83,6 +121,11 @@
             margin-top: 5px;
             padding: 5px;
             border-radius: 4px;
+        }
+
+        .disease-details {
+            display: none;
+            margin-top: 10px;
         }
 
         .modal {
@@ -118,70 +161,99 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .modal-content h2 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
+        .bmi-result {
+            font-size: 24px;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e3f2fd;
+        }
+
+        .bmi-category {
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
         }
 
         .modal-content button {
-            padding: 10px 30px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-        }
-
-        .modal-content button:hover {
-            background-color: var(--hover-color);
+            max-width: 200px;
+            margin: 20px auto 0;
         }
     </style>
 </head>
 <body>
-    <h1>จองตั๋วกิจกรรม</h1>
-    <form id="bookingForm" onsubmit="return validateForm(event)">
-        <div class="form-group">
-            <label for="fullname">ชื่อ-นามสกุล:</label>
-            <input type="text" id="fullname" name="fullname" required>
-            <div class="error" id="fullnameError">กรุณากรอกชื่อและนามสกุล</div>
-        </div>
+    <h1>แบบสอบถามสุขภาพ</h1>
+    <div class="form-container">
+        <form id="healthForm" onsubmit="return validateForm(event)">
+            <div class="form-group">
+                <label for="age">อายุ:</label>
+                <input type="number" id="age" name="age" required>
+                <div class="error" id="ageError">อายุต้องอยู่ระหว่าง 15-60 ปี</div>
+            </div>
 
-        <div class="form-group">
-            <label for="phone">เบอร์โทรศัพท์:</label>
-            <input type="tel" id="phone" name="phone" required>
-            <div class="error" id="phoneError">กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (10 หลัก ขึ้นต้นด้วย 0)</div>
-        </div>
+            <div class="form-group">
+                <label>เพศ:</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="gender" value="male" required>
+                        ชาย
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="gender" value="female">
+                        หญิง
+                    </label>
+                </div>
+                <div class="error" id="genderError">กรุณาเลือกเพศ</div>
+            </div>
 
-        <div class="form-group">
-            <label for="ticketType">ประเภทตั๋ว:</label>
-            <select id="ticketType" name="ticketType" required>
-                <option value="ปกติ">ปกติ</option>
-                <option value="VIP">VIP</option>
-                <option value="Premium">Premium</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="weight">น้ำหนัก (กิโลกรัม):</label>
+                <input type="number" id="weight" name="weight" step="0.1" required>
+                <div class="error" id="weightError">น้ำหนักต้องเป็นค่าบวก</div>
+            </div>
 
-        <div class="form-group">
-            <label for="quantity">จำนวนตั๋ว:</label>
-            <input type="number" id="quantity" name="quantity" min="1" max="5" required>
-            <div class="error" id="quantityError">จำนวนตั๋วไม่ถูกต้อง</div>
-        </div>
+            <div class="form-group">
+                <label for="height">ส่วนสูง (เซนติเมตร):</label>
+                <input type="number" id="height" name="height" required>
+                <div class="error" id="heightError">ส่วนสูงต้องเป็นค่าบวก</div>
+            </div>
 
-        <button type="submit">จองตั๋ว</button>
-    </form>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="hasDisease" name="hasDisease">
+                    มีโรคประจำตัว
+                </label>
+                <div class="disease-details" id="diseaseDetails">
+                    <textarea id="diseaseDescription" placeholder="กรุณาระบุโรคประจำตัว"></textarea>
+                    <div class="error" id="diseaseError">กรุณาระบุรายละเอียดโรคประจำตัว</div>
+                </div>
+            </div>
 
-    <div id="successModal" class="modal">
+            <button type="submit">ส่งแบบสอบถาม</button>
+        </form>
+    </div>
+
+    <div id="resultModal" class="modal">
         <div class="modal-content">
-            <h2>จองตั๋วสำเร็จ</h2>
-            <p id="modalMessage"></p>
+            <h2>ผลการคำนวณ BMI</h2>
+            <div class="bmi-result" id="bmiValue"></div>
+            <div class="bmi-category" id="bmiCategory"></div>
             <button onclick="closeModal()">ปิด</button>
         </div>
     </div>
 
     <script>
+        // แสดง/ซ่อน textarea โรคประจำตัว
+        document.getElementById('hasDisease').addEventListener('change', function() {
+            const diseaseDetails = document.getElementById('diseaseDetails');
+            diseaseDetails.style.display = this.checked ? 'block' : 'none';
+            if (!this.checked) {
+                document.getElementById('diseaseDescription').value = '';
+                document.getElementById('diseaseError').style.display = 'none';
+            }
+        });
+
         function validateForm(event) {
             event.preventDefault();
             let isValid = true;
@@ -189,53 +261,87 @@
             // รีเซ็ต error messages
             document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
 
-            // ตรวจสอบชื่อ-นามสกุล
-            const fullname = document.getElementById('fullname').value.trim();
-            if (fullname.split(/\s+/).length < 2) {
-                document.getElementById('fullnameError').style.display = 'block';
+            // ตรวจสอบอายุ
+            const age = parseInt(document.getElementById('age').value);
+            if (age < 15 || age > 60) {
+                document.getElementById('ageError').style.display = 'block';
                 isValid = false;
             }
 
-            // ตรวจสอบเบอร์โทรศัพท์
-            const phone = document.getElementById('phone').value.trim();
-            if (!/^0\d{9}$/.test(phone)) {
-                document.getElementById('phoneError').style.display = 'block';
+            // ตรวจสอบเพศ
+            const gender = document.querySelector('input[name="gender"]:checked');
+            if (!gender) {
+                document.getElementById('genderError').style.display = 'block';
                 isValid = false;
             }
 
-            // ตรวจสอบจำนวนตั๋ว
-            const ticketType = document.getElementById('ticketType').value;
-            const quantity = parseInt(document.getElementById('quantity').value);
+            // ตรวจสอบน้ำหนักและส่วนสูง
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
 
-            if (quantity < 1 || quantity > 5) {
-                document.getElementById('quantityError').textContent = 'จำนวนตั๋วต้องอยู่ระหว่าง 1-5 ใบ';
-                document.getElementById('quantityError').style.display = 'block';
+            if (weight <= 0) {
+                document.getElementById('weightError').style.display = 'block';
                 isValid = false;
             }
 
-            if ((ticketType === 'VIP' || ticketType === 'Premium') && quantity > 2) {
-                document.getElementById('quantityError').textContent = 'ตั๋ว VIP และ Premium สามารถจองได้สูงสุด 2 ใบ';
-                document.getElementById('quantityError').style.display = 'block';
+            if (height <= 0) {
+                document.getElementById('heightError').style.display = 'block';
                 isValid = false;
+            }
+
+            // ตรวจสอบโรคประจำตัว
+            const hasDisease = document.getElementById('hasDisease').checked;
+            if (hasDisease) {
+                const diseaseDescription = document.getElementById('diseaseDescription').value.trim();
+                if (diseaseDescription === '') {
+                    document.getElementById('diseaseError').style.display = 'block';
+                    isValid = false;
+                }
             }
 
             if (isValid) {
-                showSuccessModal(quantity, ticketType);
+                calculateBMI(weight, height);
             }
 
             return false;
         }
 
-        function showSuccessModal(quantity, type) {
-            const modal = document.getElementById('successModal');
-            const message = document.getElementById('modalMessage');
-            message.textContent = `จำนวน: ${quantity} ประเภท: ${type}`;
-            modal.style.display = 'block';
+        function calculateBMI(weight, height) {
+            const bmi = weight / Math.pow(height/100, 2);
+            let category = '';
+            let color = '';
+
+            if (bmi < 18.5) {
+                category = 'น้ำหนักน้อย';
+                color = '#64B5F6'; // สีฟ้า
+            } else if (bmi < 25) {
+                category = 'น้ำหนักปกติ';
+                color = '#81C784'; // สีเขียว
+            } else if (bmi < 30) {
+                category = 'น้ำหนักเกิน';
+                color = '#FFB74D'; // สีส้ม
+            } else {
+                category = 'อ้วน';
+                color = '#E57373'; // สีแดง
+            }
+
+            document.getElementById('bmiValue').textContent = `BMI: ${bmi.toFixed(2)}`;
+            const categoryElement = document.getElementById('bmiCategory');
+            categoryElement.textContent = `หมวดหมู่: ${category}`;
+            categoryElement.style.backgroundColor = color;
+            categoryElement.style.color = 'white';
+
+            showModal();
+        }
+
+        function showModal() {
+            document.getElementById('resultModal').style.display = 'block';
         }
 
         function closeModal() {
-            document.getElementById('successModal').style.display = 'none';
-            document.getElementById('bookingForm').reset();
+            document.getElementById('resultModal').style.display = 'none';
+            document.getElementById('healthForm').reset();
+            document.getElementById('diseaseDetails').style.display = 'none';
         }
     </script>
 </body>
