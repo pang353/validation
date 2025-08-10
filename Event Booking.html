@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จองตั๋วกิจกรรม</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --hover-color: #45a049;
+            --error-color: #ff5252;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 5px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: var(--hover-color);
+        }
+
+        .error {
+            color: var(--error-color);
+            font-size: 14px;
+            display: none;
+            margin-top: 5px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .modal-content button {
+            padding: 10px 30px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .modal-content button:hover {
+            background-color: var(--hover-color);
+        }
+    </style>
+</head>
+<body>
+    <h1>จองตั๋วกิจกรรม</h1>
+    <form id="bookingForm" onsubmit="return validateForm(event)">
+        <div class="form-group">
+            <label for="fullname">ชื่อ-นามสกุล:</label>
+            <input type="text" id="fullname" name="fullname" required>
+            <div class="error" id="fullnameError">กรุณากรอกชื่อและนามสกุล</div>
+        </div>
+
+        <div class="form-group">
+            <label for="phone">เบอร์โทรศัพท์:</label>
+            <input type="tel" id="phone" name="phone" required>
+            <div class="error" id="phoneError">กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (10 หลัก ขึ้นต้นด้วย 0)</div>
+        </div>
+
+        <div class="form-group">
+            <label for="ticketType">ประเภทตั๋ว:</label>
+            <select id="ticketType" name="ticketType" required>
+                <option value="ปกติ">ปกติ</option>
+                <option value="VIP">VIP</option>
+                <option value="Premium">Premium</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">จำนวนตั๋ว:</label>
+            <input type="number" id="quantity" name="quantity" min="1" max="5" required>
+            <div class="error" id="quantityError">จำนวนตั๋วไม่ถูกต้อง</div>
+        </div>
+
+        <button type="submit">จองตั๋ว</button>
+    </form>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h2>จองตั๋วสำเร็จ</h2>
+            <p id="modalMessage"></p>
+            <button onclick="closeModal()">ปิด</button>
+        </div>
+    </div>
+
+    <script>
+        function validateForm(event) {
+            event.preventDefault();
+            let isValid = true;
+
+            // รีเซ็ต error messages
+            document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+
+            // ตรวจสอบชื่อ-นามสกุล
+            const fullname = document.getElementById('fullname').value.trim();
+            if (fullname.split(/\s+/).length < 2) {
+                document.getElementById('fullnameError').style.display = 'block';
+                isValid = false;
+            }
+
+            // ตรวจสอบเบอร์โทรศัพท์
+            const phone = document.getElementById('phone').value.trim();
+            if (!/^0\d{9}$/.test(phone)) {
+                document.getElementById('phoneError').style.display = 'block';
+                isValid = false;
+            }
+
+            // ตรวจสอบจำนวนตั๋ว
+            const ticketType = document.getElementById('ticketType').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (quantity < 1 || quantity > 5) {
+                document.getElementById('quantityError').textContent = 'จำนวนตั๋วต้องอยู่ระหว่าง 1-5 ใบ';
+                document.getElementById('quantityError').style.display = 'block';
+                isValid = false;
+            }
+
+            if ((ticketType === 'VIP' || ticketType === 'Premium') && quantity > 2) {
+                document.getElementById('quantityError').textContent = 'ตั๋ว VIP และ Premium สามารถจองได้สูงสุด 2 ใบ';
+                document.getElementById('quantityError').style.display = 'block';
+                isValid = false;
+            }
+
+            if (isValid) {
+                showSuccessModal(quantity, ticketType);
+            }
+
+            return false;
+        }
+
+        function showSuccessModal(quantity, type) {
+            const modal = document.getElementById('successModal');
+            const message = document.getElementById('modalMessage');
+            message.textContent = `จำนวน: ${quantity} ประเภท: ${type}`;
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+            document.getElementById('bookingForm').reset();
+        }
+    </script>
+</body>
+</html>
